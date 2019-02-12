@@ -1,0 +1,18 @@
+{
+  "name": "updatevirtualhostinproxies",
+  "version": "1.0.0",
+  "description": "Script to update each API proxy with a new virtual host",
+  "main": "updateVirtualHosts.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^2.19.0",
+    "netrc": "^0.1.3",
+    "readline": "^1.3.0",
+    "request": "^2.88.0",
+    "url": "^0.11.0"
+  }
+}
