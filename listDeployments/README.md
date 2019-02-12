@@ -48,7 +48,7 @@ PROXY=pingstatus-v1-oas------------------------------- REV=1  ENV=test-------- S
      SERVER=8b17d613-c35c-42a1-b80d-e106a8a7d56e POD=rgce1rt001-1 REG=us-central1 TYPE=router----------- STATUS=deployed
      SERVER=8c27c616-6d63-4030-acda-026e05e6f68d POD=rgce1rt001-1 REG=us-central1 TYPE=router----------- STATUS=deployed
      ... truncated output ...
-Â```
+```
 
 ## Example 2: Filter the list of the proxies and environments
 ```
