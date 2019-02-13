@@ -169,7 +169,7 @@ function getDeploymentsResponse( deployments ) {
 					for( var s=0; s<envs[e].revision[r].server.length; s++ ) {
 						console.log( "     SERVER=%s POD=%s REG=%s TYPE=%s STATUS=%s",
 							envs[e].revision[r].server[s].uUID,
-							envs[e].revision[r].server[s].pod !== undefined ? envs[e].revision[r].server[s].pod.name : 'NA',
+							envs[e].revision[r].server[s].pod !== undefined ? envs[e].revision[r].server[s].pod.name.padEnd(12) : 'NA',
 							envs[e].revision[r].server[s].pod !== undefined ? envs[e].revision[r].server[s].pod.region : 'NA',
 							envs[e].revision[r].server[s].type.toString().padEnd(17,'-'),
 							envs[e].revision[r].server[s].status );
