@@ -28,6 +28,8 @@ node updateVirtualHosts/updateVirtualHosts-v2.js
 
 ## Notes
 
+The program `updateVirtualHosts/updateVirtualHosts-v2.js` uses an undocumented Edge API call to update the proxy in realtime.
+
 Requires the use of ~/.netrc for username and password.
 
 To use this program, you will need access to an Edge organization, of course.
