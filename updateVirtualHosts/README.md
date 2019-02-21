@@ -5,7 +5,9 @@ virtual host names used on existing proxies. It uses Edge Management API calls t
 
 NOTE: Familiarize yourself with the tool by running the script on a small set of proxies.
 
-The program
+NOTE: The program uses an undocumented Edge API to update the API proxy in realtime.
+
+ - PUT {{MGMTSVR}}/v1/o/{{ORG}}/apis/{{PROXYNAME}}/revisions/{{REVISION}}/proxies/{{PROXYENDPOINT}} { proxyEndpint representation }
 
 ## Disclaimer
 
