@@ -22,10 +22,13 @@ limitations under the License.
 	Disclaimer: "This is not an officially supported Google product."
 	Install: npm install
 	Usage: node listDeployments-v1.js
-	List all deployments  ------------------------------------------- node listDeployments-v1.js list -n -o ORG
-	List all for env test ------------------------------------------- node listDeployments-v1.js list -n -o ORG -e test
-	List all for proxy example-v1 ----------------------------------- node listDeployments-v1.js list -n -o ORG -p example-v1
-	List all for env prod, proxy example-v1 ------------------------- node listDeployments-v1.js list -n -o ORG -e prod -p example-v1
+	List all  ------------------------------------------------------- node listDeployments-v1.js list -n -o ORG -a
+	List un-deployments  -------------------------------------------- node listDeployments-v1.js list -n -o ORG -u
+	List deployments  ----------------------------------------------- node listDeployments-v1.js list -n -o ORG -d
+	List deployments with server details  --------------------------- node listDeployments-v1.js list -n -o ORG -d -s
+	List all for proxy example-v1 ----------------------------------- node listDeployments-v1.js list -n -o ORG -a -p example-v1
+	List all for env test ------------------------------------------- node listDeployments-v1.js list -n -o ORG -e test -a 
+	List all for env prod, proxy example-v1 ------------------------- node listDeployments-v1.js list -n -o ORG -e prod -a -p example-v1
 	List all for envs test,prod, proxies example-v1,example-mock-v1 - node listDeployments-v1.js list -n -o ORG -e test,prod -p example-v1,example-mock-v1
 */
 /*  Functional overview
@@ -44,25 +47,33 @@ var request = require('request');
 var netrc = require('netrc')();
 var url = require('url');
 var program = require('commander');
+var padChar = ' ';
 
 var COMMAND, BASICAUTH, MGMTSVR, ORG, ENVS = [], PROXIES = [], VHOSTS = [];
 
-program.version('2.0')
-	.usage( '[list,add,set] -n -o <org> [options] - returns details for proxies that are not properly deployed' )
+program.version('1.0', '-v, --version')
+	.usage( '[list] -n -o <org> [options]')
 	.option('-n, --netrc', 'Use credentials in $HOME/.netrc (required)')
 	.option('-b, --baseuri <baseuri>', 'Management server base URI', 'https://api.enterprise.apigee.com')
 	.option('-o, --org <org>', 'Organization name (required)')
 	.option('-e, --envs <envs>', 'Filter the comma separated list of environments')
 	.option('-p, --proxies <proxies>', 'Filter the comma separated list of proxies')
-	.option('-v, --verbose', 'List all deployments regardless of status');
+	.option('-u, --undeployed', 'List undeployed only')
+	.option('-d, --deployed', 'List deployed only')
+	.option('-a, --all', 'List all deployments regardless of status (default)')
+	.option('-s, --serverDetails', 'List deployments details for deployed proxies');
 
 	program.command('list')
-		.description('List out the existing deployment details')
+		.description('List out the existing virtualHosts')
 		.action( function() {
 			COMMAND = 'list';
 		});
 
 	program.parse(process.argv);
+
+	if( program.undeployed !== true && program.deployed !== true ) {
+		program.all = true;
+	}
 
 if (!process.argv.slice(2).length) {
 	program.outputHelp();
@@ -70,7 +81,7 @@ if (!process.argv.slice(2).length) {
 }
 
 if( COMMAND === undefined ) {
-	console.log( 'A command is required (list, add, set)' );
+	console.log( 'A command is required (list)' );
 	program.outputHelp();
 	process.exit(1);
 }
@@ -108,6 +119,8 @@ PROXIES = program.proxies !== undefined ? program.proxies.split(',') : undefined
 getAPINames( getAPINamesResponse );
 
 function getAPINames( callback ) {
+	console.log( "%s %s %s %s", 'PROXY'.padEnd(48,padChar), 'REV'.padEnd(6,padChar), 'ENV'.padEnd(16,padChar), 'STATE');
+	// console.log( "     SERVER ----------------------------------- POD-------- REG ---------- TYPE ---------- STATE ----------");
 	var localRequest = {
 	  url: MGMTSVR + ORG + '/apis/',
 	  headers: { 'Authorization': 'Basic ' + BASICAUTH },
@@ -153,29 +166,32 @@ function getDeployments( proxyName, callback ) {
 }
 function getDeploymentsResponse( deployments ) {
 	var envs = deployments.environment;
-	if( envs.length === 0 ) {
-		console.log( "PROXY=%s is not deployed", deployments.name.padEnd(48, '='));
+	if( ((program.all === true) || (program.undeployed === true)) && envs.length === 0 ) {
+		console.log( "%s STATE=undeployed", deployments.name.padEnd(72, padChar));
 	}
 	for( var e=0; e<envs.length; e++ ) {
 		// Show all environments or filter environments
 		if( ENVS === undefined || (ENVS !== undefined && ENVS.includes( envs[e].name) ) ) {
 			for( var r=0; r<envs[e].revision.length; r++ ) {
-				if( program.verbose === true || envs[e].revision[r].state !== 'deployed') {
-					console.log( "PROXY=%s REV=%s ENV=%s STATE=%s",
-						deployments.name.padEnd(48,'-'),
+				if( (program.all === true) || (program.deployed === true) ) {
+					console.log( "%s REV=%s ENV=%s STATE=%s",
+						deployments.name.padEnd(48,padChar),
 						envs[e].revision[r].name.padEnd(2),
-						envs[e].name.padEnd(12,'-'),
+						envs[e].name.padEnd(12,padChar),
 						envs[e].revision[r].state );
-					for( var s=0; s<envs[e].revision[r].server.length; s++ ) {
+					if( program.serverDetails === true || envs[e].revision[r].state !== 'deployed') {
+						for( var s=0; s<envs[e].revision[r].server.length; s++ ) {
 						console.log( "     SERVER=%s POD=%s REG=%s TYPE=%s STATUS=%s",
 							envs[e].revision[r].server[s].uUID,
 							envs[e].revision[r].server[s].pod !== undefined ? envs[e].revision[r].server[s].pod.name.padEnd(12) : 'NA',
-							envs[e].revision[r].server[s].pod !== undefined ? envs[e].revision[r].server[s].pod.region : 'NA',
-							envs[e].revision[r].server[s].type.toString().padEnd(17,'-'),
+							envs[e].revision[r].server[s].pod !== undefined ? envs[e].revision[r].server[s].pod.region.padEnd(14) : 'NA',
+							envs[e].revision[r].server[s].type.toString().padEnd(17,padChar),
 							envs[e].revision[r].server[s].status );
+						}
 					}
 				}
 			}
 		}
 	}
+
 }
