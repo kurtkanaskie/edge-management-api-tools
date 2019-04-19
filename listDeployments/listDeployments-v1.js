@@ -119,8 +119,7 @@ PROXIES = program.proxies !== undefined ? program.proxies.split(',') : undefined
 getAPINames( getAPINamesResponse );
 
 function getAPINames( callback ) {
-	console.log( "%s %s %s %s", 'PROXY'.padEnd(48,padChar), 'REV'.padEnd(6,padChar), 'ENV'.padEnd(16,padChar), 'STATE');
-	// console.log( "     SERVER ----------------------------------- POD-------- REG ---------- TYPE ---------- STATE ----------");
+	// console.log( "%s %s %s %s", 'PROXY'.padEnd(48,padChar), 'REV'.padEnd(6,padChar), 'ENV'.padEnd(16,padChar), 'STATE');
 	var localRequest = {
 	  url: MGMTSVR + ORG + '/apis/',
 	  headers: { 'Authorization': 'Basic ' + BASICAUTH },
@@ -141,6 +140,7 @@ function getAPINamesResponse( apiNames ) {
 	// console.log( "APIS: " + apiNames );
 	for( var a=0; a<apiNames.length; a++ ) {
 		// Show all APIs if undefined or filter API names
+		// console.log( "API: " + apiNames[a] );
 		if( PROXIES === undefined || (PROXIES !== undefined && PROXIES.includes(apiNames[a]) ) ) {
 			getDeployments( apiNames[a], getDeploymentsResponse );
 		}
@@ -165,13 +165,13 @@ function getDeployments( proxyName, callback ) {
 	});
 }
 function getDeploymentsResponse( deployments ) {
+	// console.log( "DEP: " + JSON.stringify(deployments));
 	var envs = deployments.environment;
-	if( ((program.all === true) || (program.undeployed === true)) && envs.length === 0 ) {
-		console.log( "%s STATE=undeployed", deployments.name.padEnd(72, padChar));
-	}
+	var deployed = false;
 	for( var e=0; e<envs.length; e++ ) {
 		// Show all environments or filter environments
 		if( ENVS === undefined || (ENVS !== undefined && ENVS.includes( envs[e].name) ) ) {
+			deployed = true;
 			for( var r=0; r<envs[e].revision.length; r++ ) {
 				if( (program.all === true) || (program.deployed === true) ) {
 					console.log( "%s REV=%s ENV=%s STATE=%s",
@@ -193,5 +193,7 @@ function getDeploymentsResponse( deployments ) {
 			}
 		}
 	}
-
+	if( ((program.all === true) || (program.undeployed === true)) && deployed === false ) {
+		console.log( "%s STATE=undeployed", deployments.name.padEnd(72, padChar));
+	}
 }
