@@ -2,7 +2,41 @@
 
 This directory contains a Node.js program that allows an Org Admin to view deployment details for proxies. It is useful for detecting improperly deployed proxies or to see what proxies are not deployed. It uses standard Edge Management API calls.
 
-By default the program will list all proxies deployments status. To see server deployment details use -s
+By default the program will list all proxies deployments status.
+## Usage:
+```
+$ node listDeployments-v1.js 
+Usage: listDeployments-v1 [list] -n -o <org> [options]
+
+Options:
+  -v, --version            output the version number
+  -n, --netrc              Use credentials in $HOME/.netrc (required)
+  -b, --baseuri <baseuri>  Management server base URI (default: "https://api.enterprise.apigee.com")
+  -o, --org <org>          Organization name (required)
+  -e, --envs <envs>        Filter the comma separated list of environments
+  -p, --proxies <proxies>  Filter the comma separated list of proxies
+  -u, --undeployed         List undeployed only
+  -d, --deployed           List deployed only
+  -a, --all                List all deployments regardless of status (default)
+  -s, --serverDetails      List deployments details for deployed proxies
+  -h, --help               output usage information
+
+Commands:
+  list                     List out the existing virtualHosts
+```
+
+## Examples
+```
+List all  ------------------------------------------------------- node listDeployments-v1.js list -n -o ORG -a  
+List un-deployments  -------------------------------------------- node listDeployments-v1.js list -n -o ORG -u  
+List deployments  ----------------------------------------------- node listDeployments-v1.js list -n -o ORG -d  
+List deployments with server details  --------------------------- node listDeployments-v1.js list -n -o ORG -d -s  
+List all for proxy example-v1 ----------------------------------- node listDeployments-v1.js list -n -o ORG -a -p ex1  
+List all for env test ------------------------------------------- node listDeployments-v1.js list -n -o ORG -e test -a  
+List all for env prod, proxy example-v1 ------------------------- node listDeployments-v1.js list -n -o ORG -e prod -a -p ex1  
+List all for envs test,prod, proxies example-v1,example-mock-v1 - node listDeployments-v1.js list -n -o ORG -e test,prod -p ex1,ex2
+```
+
 
 ## Example 1: List all proxies and their deployment status
 
